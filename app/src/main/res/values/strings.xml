@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">TweetSlider</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="twitter_consumer_key">y8HHL0XEWqZzM2r5Tx1oF3fsP</string>
+    <string name="twitter_consumer_secret">hL1JcchfoYLB4xIL5suWzdZoMme1fUHKuHbTPlI0530QtuQdbv</string>
+    <string name="twitter_oauth">Twitter認証</string>
+    <string name="twitter_callback_url">gabu://twitter</string>
+</resources>
