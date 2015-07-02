@@ -18,10 +18,7 @@ public class TwitterUtils {
     private static final String PREF_NAME = "twitter_access_token";
 
     /**
-     * Twitterインスタンスを取得します。アクセストークンが保存されていれば自動的にセットします。
-     *
-     * @param context
-     * @return
+     * インスタンス取得,トークンがあればセット
      */
     public static Twitter getTwitterInstance(Context context) {
         String consumerKey = context.getString(R.string.twitter_consumer_key);
@@ -38,10 +35,7 @@ public class TwitterUtils {
     }
 
     /**
-     * アクセストークンをプリファレンスに保存します。
-     *
-     * @param context
-     * @param accessToken
+     * アクセストークンを保存します。
      */
     public static void storeAccessToken(Context context, AccessToken accessToken) {
         SharedPreferences preferences = context.getSharedPreferences(PREF_NAME,
@@ -53,10 +47,7 @@ public class TwitterUtils {
     }
 
     /**
-     * アクセストークンをプリファレンスから読み込みます。
-     *
-     * @param context
-     * @return
+     * アクセストークン読み込み
      */
     public static AccessToken loadAccessToken(Context context) {
         SharedPreferences preferences = context.getSharedPreferences(PREF_NAME,
