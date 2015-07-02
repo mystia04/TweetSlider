@@ -31,112 +31,123 @@ import twitter4j.TwitterException;
 
 public class MainActivity extends ListActivity {
 
-    private TweetAdapter mAdapter;
-    private Twitter mTwitter;
+	private TweetAdapter mAdapter;
+	private Twitter mTwitter;
+	private SwipeRefreshLayout hSwipeRefreshLayout;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        final SwipeRefreshLayout swipeRefreshLayout=(SwipeRefreshLayout)findViewById(R.id.swipe_refresh);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener()
-        {
-            @Override
-            public void onRefresh()
-            {
-                reloadTimeLine();
-            }
-        });
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.timeline_layout);
 
-        /* トークン持ってるか判別 */
-        if (!TwitterUtils.hasAccessToken(this)) {
-            Intent intent = new Intent(this, TwitterOAuthActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-            mAdapter = new TweetAdapter(this);
-            setListAdapter(mAdapter);
+		/**
+		 * SwipeRefreshLayoutのハンドラを取得
+		 * findViewByIdはsetContentView実行後でないとnullが返される
+		 */
+		hSwipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.swipe_refresh);
+		//	Pull to Refreshで引っ張られたときの動作を定義
+		hSwipeRefreshLayout.setOnRefreshListener(hOnSwipeRefreshListener);
 
-            mTwitter = TwitterUtils.getTwitterInstance(this);
-            reloadTimeLine();
-        }
-    }
+		/* トークン持ってるか判別 */
+		if (!TwitterUtils.hasAccessToken(this)) {
+			Intent intent = new Intent(this, TwitterOAuthActivity.class);
+			startActivity(intent);
+			finish();
+		} else {
+			mAdapter = new TweetAdapter(this);
+			setListAdapter(mAdapter);
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu){
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
+			mTwitter = TwitterUtils.getTwitterInstance(this);
+			reloadTimeLine();
+		}
+	}
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_refresh:
-                reloadTimeLine();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+	private SwipeRefreshLayout.OnRefreshListener hOnSwipeRefreshListener = new SwipeRefreshLayout.OnRefreshListener()
+	{
+		@Override
+		public void onRefresh()
+		{
+			reloadTimeLine();
+		}
+	};
 
-    private class TweetAdapter extends ArrayAdapter<Status> {
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu){
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu_main, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
 
-        private LayoutInflater mInflater;
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.menu_refresh:
+				reloadTimeLine();
+				return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
 
-        public TweetAdapter(Context context) {
-            super(context, R.layout.timeline_layout);
-            mInflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+	private class TweetAdapter extends ArrayAdapter<Status> {
 
-        }
+		private LayoutInflater mInflater;
 
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = mInflater.inflate(R.layout.list_item_tweet, null);
-            }
-            Status item = getItem(position);
-            TextView name = (TextView) convertView.findViewById(R.id.name);
-            name.setText(item.getUser().getName());
-            TextView screenName = (TextView) convertView.findViewById(R.id.screen_name);
-            screenName.setText("@" + item.getUser().getScreenName());
-            TextView text = (TextView) convertView.findViewById(R.id.text);
-            text.setText(item.getText());
-            SmartImageView icon = (SmartImageView) convertView.findViewById(R.id.icon);
-            icon.setImageUrl(item.getUser().getProfileImageURL());
-            return convertView;
-        }
-    }
+		public TweetAdapter(Context context) {
+			super(context, R.layout.timeline_layout);
+			mInflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+		}
 
-    private void reloadTimeLine() {
-        AsyncTask<Void, Void, List<Status>> task = new AsyncTask<Void, Void, List<Status>>() {
-            @Override
-            protected List<twitter4j.Status> doInBackground(Void... params) {
-                try {
-                    return mTwitter.getHomeTimeline();
-                } catch (TwitterException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			if (convertView == null) {
+				convertView = mInflater.inflate(R.layout.list_item_tweet, null);
+			}
+			Status item = getItem(position);
+			TextView name = (TextView) convertView.findViewById(R.id.name);
+			name.setText(item.getUser().getName());
+			TextView screenName = (TextView) convertView.findViewById(R.id.screen_name);
+			screenName.setText("@" + item.getUser().getScreenName());
+			TextView text = (TextView) convertView.findViewById(R.id.text);
+			text.setText(item.getText());
+			SmartImageView icon = (SmartImageView) convertView.findViewById(R.id.icon);
+			icon.setImageUrl(item.getUser().getProfileImageURL());
+			return convertView;
+		}
+	}
 
-            @Override
-            protected void onPostExecute(List<twitter4j.Status> result) {
-                if (result != null) {
-                    mAdapter.clear();
-                    for (twitter4j.Status status : result) {
-                        mAdapter.add(status);
-                    }
-                    getListView().setSelection(0);
-                } else {
-                    showToast("タイムラインの取得に失敗しました。。。");
-                }
-            }
-        };
-        task.execute();
-    }
+	private void reloadTimeLine() {
+		AsyncTask<Void, Void, List<Status>> task = new AsyncTask<Void, Void, List<Status>>() {
+			@Override
+			protected List<twitter4j.Status> doInBackground(Void... params) {
+				try {
+					return mTwitter.getHomeTimeline();
+				} catch (TwitterException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
 
-    private void showToast(String text) {
-        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
-    }
+			@Override
+			protected void onPostExecute(List<twitter4j.Status> result) {
+				if (result != null) {
+					mAdapter.clear();
+					for (twitter4j.Status status : result) {
+						mAdapter.add(status);
+					}
+					getListView().setSelection(0);
+				} else {
+					showToast("タイムラインの取得に失敗しました。。。");
+				}
+				//	Pull to Refreshの動作を終了
+				hSwipeRefreshLayout.setRefreshing(false);
+			}
+		};
+		task.execute();
+	}
+
+	private void showToast(String text) {
+		Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+	}
 }
 
 
