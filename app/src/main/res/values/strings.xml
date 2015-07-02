@@ -7,4 +7,5 @@
     <string name="twitter_consumer_secret">hL1JcchfoYLB4xIL5suWzdZoMme1fUHKuHbTPlI0530QtuQdbv</string>
     <string name="twitter_oauth">Twitter認証</string>
     <string name="twitter_callback_url">gabu://twitter</string>
+    <string name="menu_refresh">更新</string>
 </resources>
