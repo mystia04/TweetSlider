@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="8dp" >
@@ -19,7 +20,8 @@
         android:layout_alignTop="@+id/icon"
         android:layout_marginLeft="8dp"
         android:layout_toRightOf="@+id/icon"
-        android:text="名前入ります" />
+        android:text="なまえ"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
         android:id="@+id/screen_name"
@@ -28,7 +30,8 @@
         android:layout_alignTop="@+id/name"
         android:layout_marginLeft="8dp"
         android:layout_toRightOf="@+id/name"
-        android:text="\uFF20gabu" />
+        android:text="ユーザー名"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
         android:id="@+id/text"
@@ -36,6 +39,8 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/name"
         android:layout_below="@+id/name"
-        android:text="本文本文本文本文本文本文本文本文本文本文" />
+        android:text="本文本文本文本文本文本文本文本文本文本文"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#000000" />
 
 </RelativeLayout>
