@@ -5,6 +5,7 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -36,6 +37,15 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final SwipeRefreshLayout swipeRefreshLayout=(SwipeRefreshLayout)findViewById(R.id.swipe_refresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener()
+        {
+            @Override
+            public void onRefresh()
+            {
+                reloadTimeLine();
+            }
+        });
 
         /* トークン持ってるか判別 */
         if (!TwitterUtils.hasAccessToken(this)) {
@@ -73,8 +83,9 @@ public class MainActivity extends ListActivity {
         private LayoutInflater mInflater;
 
         public TweetAdapter(Context context) {
-            super(context, android.R.layout.simple_list_item_1);
+            super(context, R.layout.timeline_layout);
             mInflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+
         }
 
         @Override

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.SwipeRefreshLayout
+    android:id="@+id/swipe_refresh"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/timelinelist"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+</ListView>
+    </android.support.v4.widget.SwipeRefreshLayout>
