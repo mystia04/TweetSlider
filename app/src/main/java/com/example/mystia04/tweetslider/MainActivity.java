@@ -8,6 +8,9 @@ import android.os.AsyncTask;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.support.v7.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,11 +32,13 @@ import twitter4j.Twitter;
 import twitter4j.TwitterException;
 
 
-public class MainActivity extends ListActivity {
+public class MainActivity extends Activity {
 
 	private TweetAdapter mAdapter;
 	private Twitter mTwitter;
 	private SwipeRefreshLayout hSwipeRefreshLayout;
+	private RecyclerView.LayoutManager hLayoutManager;
+	private RecyclerView hRecyclerView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +53,26 @@ public class MainActivity extends ListActivity {
 		//	Pull to Refreshで引っ張られたときの動作を定義
 		hSwipeRefreshLayout.setOnRefreshListener(hOnSwipeRefreshListener);
 
+		hRecyclerView = (RecyclerView)findViewById(R.id.recyclerview);
+		hLayoutManager = new LinearLayoutManager(this);
+		hRecyclerView.setLayoutManager(hLayoutManager);
+
+
+		hRecyclerView.setOnTouchListener(new TweetItemTouchListener(hRecyclerView,
+				new TweetItemTouchListener.Callbacks() {
+					@Override
+					public void onLeftSw(int viewPos) {
+						//	Favorite
+						createFavorite(mAdapter.getStatusFromPosition(viewPos).getId());
+					}
+
+					@Override
+					public void onRightSw(int viewPos) {
+						//	Retweet
+						createRetweet(mAdapter.getStatusFromPosition(viewPos).getId());
+					}
+				}));
+
 		/* トークン持ってるか判別 */
 		if (!TwitterUtils.hasAccessToken(this)) {
 			Intent intent = new Intent(this, TwitterOAuthActivity.class);
@@ -55,7 +80,8 @@ public class MainActivity extends ListActivity {
 			finish();
 		} else {
 			mAdapter = new TweetAdapter(this);
-			setListAdapter(mAdapter);
+			hRecyclerView.setAdapter(mAdapter);
+			//setListAdapter(mAdapter);
 
 			mTwitter = TwitterUtils.getTwitterInstance(this);
 			reloadTimeLine();
@@ -88,15 +114,56 @@ public class MainActivity extends ListActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	private class TweetAdapter extends ArrayAdapter<Status> {
-
+	private class TweetAdapter extends RecyclerView.Adapter<TweetItemViewHolder> {
 		private LayoutInflater mInflater;
+		private ArrayList<Status> tweetList;
 
 		public TweetAdapter(Context context) {
-			super(context, R.layout.timeline_layout);
+			super();
+			tweetList = new ArrayList<Status>();
 			mInflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
 		}
 
+		@Override
+		public TweetItemViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+			View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.list_item_tweet, null, false);
+			return new TweetItemViewHolder(v);
+		}
+
+		@Override
+		public void onBindViewHolder(TweetItemViewHolder viewHolder, int i){
+			viewHolder.bindData(tweetList.get(i));
+		}
+
+		@Override
+		public int getItemCount() {
+			return tweetList.size();
+		}
+
+		public Status getStatusFromPosition(int pos)
+		{
+			return tweetList.get(pos);
+		}
+
+		public void remove(int pos) {
+			if ( pos < 0 )
+				return;
+			tweetList.remove(pos);
+			notifyItemRemoved(pos);
+		}
+
+		public void add(int pos, Status data) {
+			tweetList.add(pos, data);
+			notifyItemInserted(pos);
+		}
+
+		public void clear()
+		{
+			int len = tweetList.size();
+			tweetList.clear();
+			notifyItemRangeRemoved(0,len);
+		}
+		/*
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			if (convertView == null) {
@@ -113,6 +180,7 @@ public class MainActivity extends ListActivity {
 			icon.setImageUrl(item.getUser().getProfileImageURL());
 			return convertView;
 		}
+		*/
 	}
 
 	private void reloadTimeLine() {
@@ -131,10 +199,12 @@ public class MainActivity extends ListActivity {
 			protected void onPostExecute(List<twitter4j.Status> result) {
 				if (result != null) {
 					mAdapter.clear();
+					int i = 0;
 					for (twitter4j.Status status : result) {
-						mAdapter.add(status);
+						mAdapter.add(i, status);
+						i ++;
 					}
-					getListView().setSelection(0);
+					//getListView().setSelection(0);
 				} else {
 					showToast("タイムラインの取得に失敗しました。。。");
 				}
@@ -143,6 +213,56 @@ public class MainActivity extends ListActivity {
 			}
 		};
 		task.execute();
+	}
+
+	/**
+	 * お気に入りに登録します
+	 * @param status_id 登録するstatus_id
+	 */
+	private void createFavorite(long status_id) {
+		AsyncTask<Long, Void, twitter4j.Status> task = new AsyncTask<Long, Void, twitter4j.Status>() {
+			@Override
+			protected twitter4j.Status doInBackground(Long... params) {
+				try {
+					return mTwitter.createFavorite((long) params[0]);
+				} catch (TwitterException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+			@Override
+			protected void onPostExecute(twitter4j.Status result) {
+				if (result == null) {
+					showToast("お気に入り登録に失敗しました");
+				}
+			}
+		};
+		task.execute(status_id);
+	}
+
+	/**
+	 * リツイートを行います
+	 * @param status_id 登録するstatus_id
+	 */
+	private void createRetweet(long status_id) {
+		AsyncTask<Long, Void, twitter4j.Status> task = new AsyncTask<Long, Void, twitter4j.Status>() {
+			@Override
+			protected twitter4j.Status doInBackground(Long... params) {
+				try {
+					return mTwitter.retweetStatus((long)params[0]);
+				} catch (TwitterException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+			@Override
+			protected void onPostExecute(twitter4j.Status result) {
+				if (result == null) {
+					showToast("リツイートに失敗しました");
+				}
+			}
+		};
+		task.execute(status_id);
 	}
 
 	private void showToast(String text) {
