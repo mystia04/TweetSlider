@@ -233,7 +233,9 @@ public class MainActivity extends Activity {
 			@Override
 			protected void onPostExecute(twitter4j.Status result) {
 				if (result == null) {
-					showToast("お気に入り登録に失敗しました");
+					showToast("お気に入り登録に失敗しました…");
+				}else{
+					showToast("お気に入りに登録しました！");
 				}
 			}
 		};
@@ -258,7 +260,9 @@ public class MainActivity extends Activity {
 			@Override
 			protected void onPostExecute(twitter4j.Status result) {
 				if (result == null) {
-					showToast("リツイートに失敗しました");
+					showToast("リツイートに失敗しました…");
+				}else {
+					showToast("リツイートしました！");
 				}
 			}
 		};
