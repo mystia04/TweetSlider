@@ -32,6 +32,9 @@
                     android:scheme="mystia" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".TweetActivity"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

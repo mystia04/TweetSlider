@@ -7,4 +7,5 @@
     <string name="twitter_oauth">Twitter Auth</string>
     <string name="twitter_callback_url">mystia://twitter</string>
     <string name="menu_refresh">更新</string>
+    <string name="menu_tweet">つぶやく</string>
 </resources>
